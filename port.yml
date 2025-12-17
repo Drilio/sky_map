@@ -2,3 +2,6 @@ services:
   frontend:
     ports:
       - "${FRONTEND_PORT}:4000"
+  api:
+    ports:
+      - "${API_PORT}:8000"
