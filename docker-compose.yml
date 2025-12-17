@@ -1,10 +1,12 @@
 services:
   frontend:
     build:
-      context: frontend
+      context: Frontend
       dockerfile: Dockerfile
-    depends_on:
-      - backend
     restart: always
     networks:
       - app-network
+
+networks:
+   app-network:
+     driver: bridge
