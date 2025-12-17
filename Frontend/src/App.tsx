@@ -10,6 +10,8 @@ type StarRow = {
     mag: number;
     rarad: number;
     decrad: number;
+    x: number;
+    y: number;
 };
 
 export default function App() {
