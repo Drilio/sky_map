@@ -1,7 +1,10 @@
 services:
   frontend:
     ports:
-      - "${FRONTEND_PORT}:4000"
+      - "4000:4000"
   api:
     ports:
       - "${API_PORT}:8000"
+  db:
+    ports:
+      - "${DB_EXPOSE_PORT}:3306"
