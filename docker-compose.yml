@@ -3,6 +3,8 @@ services:
     build:
       context: Frontend
       dockerfile: Dockerfile
+    environment:
+      - VITE_API_BASE_URL=http://${API_HOST}:${API_PORT}
     restart: always
     networks:
       - app-network

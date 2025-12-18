@@ -89,7 +89,7 @@ export async function getStars(opts: {
     kind: OverlayKind;
     limit?: number;
     signal?: AbortSignal;
-}): Promise<Star[] | void> {
+}): Promise<Star[]> {
     const limit = opts.limit ?? 50;
     const base = import.meta.env.VITE_API_BASE_URL;
 
