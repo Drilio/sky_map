@@ -1,35 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { getStars } from "../Api/getStars"; // adjust if your path differs
+import { getStars } from "../Api/getStars";
+import {
+    clamp,
+    computeFitScale,
+    computeWorldCenter,
+    pickStar,
+    type Star,
+    type StarPoint,
+    toPoints,
+    toScreen,
+    type View,
+    starPixelRadius,
+} from "./utils";
 
 type OverlayKind = "brightest" | "nearest" | "hottest" | "largest";
-
-type Star = {
-    id: number;
-    x: number;
-    y: number;
-    z?: number;
-    mag?: number;
-    proper?: string;
-    con?: string;
-};
-
-type View = {
-    scale: number;
-    panX: number;
-    panY: number;
-};
-
-function clamp(n: number, a: number, b: number) {
-    return Math.max(a, Math.min(b, n));
-}
-
-function starLabel(s: Star) {
-    const con = (s.con ?? "").toString().trim();
-    if (con) return con;
-    const proper = (s.proper ?? "").toString().trim();
-    if (proper) return proper;
-    return `Star #${s.id}`;
-}
 
 export default function SkyMap({
                                    kind = "nearest",
@@ -53,7 +37,6 @@ export default function SkyMap({
 
         getStars({ kind, limit, signal: ac.signal })
             .then((rows) => {
-                // keep only what this canvas uses
                 setStars(
                     rows.map((s) => ({
                         id: s.id,
@@ -79,62 +62,26 @@ export default function SkyMap({
     const cx = width / 2;
     const cy = height / 2;
 
-    const pts = useMemo(() => {
-        return (stars ?? []).map((s) => ({
-            ...s,
-            X: Number(s.x) || 0,
-            Y: Number(s.y) || 0,
-            Z: Number(s.z) || 0,
-            MAG: typeof s.mag === "number" ? s.mag : Number(s.mag) || 0,
-            LABEL: starLabel(s),
-        }));
-    }, [stars]);
+    const pts: StarPoint[] = useMemo(() => toPoints(stars), [stars]);
+    const worldCenter = useMemo(() => computeWorldCenter(pts), [pts]);
 
     const [view, setView] = useState<View>({ scale: 1, panX: 0, panY: 0 });
     const [hover, setHover] = useState<null | { starId: number; px: number; py: number }>(null);
 
-    const worldCenter = useMemo(() => {
-        if (!pts.length) return { cxw: 0, cyw: 0 };
-        const sx = pts.reduce((a, p) => a + p.X, 0);
-        const sy = pts.reduce((a, p) => a + p.Y, 0);
-        return { cxw: sx / pts.length, cyw: sy / pts.length };
-    }, [pts]);
-
     useEffect(() => {
         if (!pts.length) return;
 
-        let rMax = 1e-9;
-        for (const p of pts) {
-            const dx = p.X - worldCenter.cxw;
-            const dy = p.Y - worldCenter.cyw;
-            rMax = Math.max(rMax, Math.hypot(dx, dy));
-        }
+        const scale = computeFitScale({
+            pts,
+            worldCenter,
+            diskRadius,
+            margin: 0.92,
+            maxScale: 1,
+            minScale: 0.02,
+        });
 
-        const margin = 0.92;
-        const fitScale = (diskRadius * margin) / rMax;
-
-        setView((v) => ({
-            ...v,
-            scale: clamp(Math.min(1, fitScale), 0.02, 1),
-            panX: 0,
-            panY: 0,
-        }));
-    }, [pts, worldCenter.cxw, worldCenter.cyw, diskRadius]);
-
-    const toScreen = (p: (typeof pts)[number], v: View) => {
-        const xw = p.X - worldCenter.cxw;
-        const yw = p.Y - worldCenter.cyw;
-        return {
-            sx: cx + v.panX + xw * v.scale,
-            sy: cy + v.panY - yw * v.scale,
-        };
-    };
-
-    const starPixelRadius = (mag: number) => {
-        const m = clamp(mag, -2, 12);
-        const r = 4.2 - (m + 2) * (3.2 / 14);
-        return clamp(r, 1.0, 4.2);
-    };
+        setView((v) => ({ ...v, scale, panX: 0, panY: 0 }));
+    }, [pts, worldCenter, diskRadius]);
 
     const draw = () => {
         const c = canvasRef.current;
@@ -147,34 +94,37 @@ export default function SkyMap({
         g.fillStyle = "#06080c";
         g.fillRect(0, 0, width, height);
 
+        const centerX = cx + view.panX;
+        const centerY = cy + view.panY;
+
         g.save();
         g.beginPath();
-        g.arc(cx + view.panX, cy + view.panY, diskRadius, 0, Math.PI * 2);
+        g.arc(centerX, centerY, diskRadius, 0, Math.PI * 2);
         g.clip();
 
         g.strokeStyle = "rgba(255,255,255,0.10)";
         g.lineWidth = 1;
         for (let i = 1; i <= 5; i++) {
             g.beginPath();
-            g.arc(cx + view.panX, cy + view.panY, (diskRadius * i) / 5, 0, Math.PI * 2);
+            g.arc(centerX, centerY, (diskRadius * i) / 5, 0, Math.PI * 2);
             g.stroke();
         }
 
         g.strokeStyle = "rgba(255,255,255,0.08)";
         g.beginPath();
-        g.moveTo(cx + view.panX - diskRadius, cy + view.panY);
-        g.lineTo(cx + view.panX + diskRadius, cy + view.panY);
+        g.moveTo(centerX - diskRadius, centerY);
+        g.lineTo(centerX + diskRadius, centerY);
         g.stroke();
 
         g.beginPath();
-        g.moveTo(cx + view.panX, cy + view.panY - diskRadius);
-        g.lineTo(cx + view.panX, cy + view.panY + diskRadius);
+        g.moveTo(centerX, centerY - diskRadius);
+        g.lineTo(centerX, centerY + diskRadius);
         g.stroke();
 
         for (const p of pts) {
-            const { sx, sy } = toScreen(p, view);
-            const dx = sx - (cx + view.panX);
-            const dy = sy - (cy + view.panY);
+            const { sx, sy } = toScreen(p, view, { cx, cy, worldCenter });
+            const dx = sx - centerX;
+            const dy = sy - centerY;
             if (dx * dx + dy * dy > diskRadius * diskRadius) continue;
 
             const r = starPixelRadius(p.MAG);
@@ -184,10 +134,11 @@ export default function SkyMap({
             g.fill();
         }
 
+        // hover ring
         if (hover) {
             const p = pts.find((q) => q.id === hover.starId);
             if (p) {
-                const { sx, sy } = toScreen(p, view);
+                const { sx, sy } = toScreen(p, view, { cx, cy, worldCenter });
                 g.strokeStyle = "rgba(255,255,255,0.65)";
                 g.lineWidth = 1.5;
                 g.beginPath();
@@ -201,7 +152,7 @@ export default function SkyMap({
         g.strokeStyle = "rgba(255,255,255,0.14)";
         g.lineWidth = 1;
         g.beginPath();
-        g.arc(cx + view.panX, cy + view.panY, diskRadius, 0, Math.PI * 2);
+        g.arc(centerX, centerY, diskRadius, 0, Math.PI * 2);
         g.stroke();
     };
 
@@ -211,19 +162,6 @@ export default function SkyMap({
     }, [pts, view, hover, width, height]);
 
     const drag = useRef<{ on: boolean; x: number; y: number } | null>(null);
-
-    const pickStar = (mx: number, my: number) => {
-        let best: { id: number; d2: number } | null = null;
-        for (const p of pts) {
-            const { sx, sy } = toScreen(p, view);
-            const r = starPixelRadius(p.MAG) + 6;
-            const dx = mx - sx;
-            const dy = my - sy;
-            const d2 = dx * dx + dy * dy;
-            if (d2 <= r * r && (!best || d2 < best.d2)) best = { id: p.id, d2 };
-        }
-        return best?.id ?? null;
-    };
 
     const onMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -240,7 +178,7 @@ export default function SkyMap({
             return;
         }
 
-        const id = pickStar(mx, my);
+        const id = pickStar({ pts, view, cx, cy, worldCenter, mx, my });
         if (id == null) {
             if (hover) setHover(null);
             return;
@@ -329,10 +267,13 @@ export default function SkyMap({
                         pointerEvents: "none",
                     }}
                 >
-                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>{hoveredStar.LABEL}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>
+                        {hoveredStar.LABEL}
+                    </div>
                     <div style={{ opacity: 0.85 }}>Mag: {hoveredStar.MAG.toFixed(2)}</div>
                     <div style={{ opacity: 0.65, marginTop: 6 }}>
-                        x: {hoveredStar.X.toFixed(6)} | y: {hoveredStar.Y.toFixed(6)} | z: {hoveredStar.Z.toFixed(6)}
+                        x: {hoveredStar.X.toFixed(6)} | y: {hoveredStar.Y.toFixed(6)} | z:{" "}
+                        {hoveredStar.Z.toFixed(6)}
                     </div>
                 </div>
             )}
