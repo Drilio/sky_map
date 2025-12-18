@@ -32,7 +32,7 @@ Repository layout (top-level): `API/`, `Frontend/`, `data/`, `.env.sample`, `doc
 3. If your repo expects an initialization pass (DB seed/migrations, bootstrap, etc.), use the init compose file:
 
     ```bash
-    docker compose -f init.docker-compose.yml up --build
+    docker compose -f docker-compose.yml -f init.docker-compose.yml up --build init-db
     ```
 
 Notes:
