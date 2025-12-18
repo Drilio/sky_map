@@ -1,7 +1,3 @@
-// getStars.tsx
-// GET /api/overlays/top?kind=brightest|nearest|hottest|largest&limit=50
-// API returns: Star[] (plain JSON array)
-
 export type OverlayKind = "brightest" | "nearest" | "hottest" | "largest";
 
 export type Star = {
