@@ -6,7 +6,7 @@ services:
     restart: always
     networks:
       - app-network
-  api: 
+  api:
     build:
       context: API
       dockerfile: Dockerfile
@@ -26,7 +26,7 @@ services:
       - ./mariaDB/data:/var/lib/mysql:rw
     networks:
       - app-network
-    
+
 networks:
-   app-network:
-     driver: bridge
+  app-network:
+    driver: bridge

@@ -1,25 +1,18 @@
 import "./App.css";
 import SkyMap from "./Components/SkyMap";
-
-import rawStars from "../mock_data.json";
-
-type StarRow = {
-    id: number;
-    proper: string;
-    con: string;
-    mag: number;
-    rarad: number;
-    decrad: number;
-    x: number;
-    y: number;
-};
+import OverlayKindSelector from "./Components/OverlayKindSelector.tsx";
+import {useState} from "react";
+import type {OverlayKind} from "./Api/getStars.tsx";
 
 export default function App() {
-    const stars = rawStars as unknown as StarRow[];
+    const [kind, setKind] = useState<OverlayKind>("nearest");
 
     return (
         <div style={{ padding: 16 }}>
-            <SkyMap width={1100} height={700} stars={stars} />
+            <OverlayKindSelector value={kind} onChange={setKind} />
+            <div style={{ marginTop: 12 }}>
+                <SkyMap kind={kind} limit={50} />
+            </div>
         </div>
     );
 }
