@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import Date, TopBrightness
+from .views import Date, Top, TopId
 
 urlpatterns = [
     path('date/', Date.as_view()),
-    path('topbrightness/', TopBrightness.as_view())
+    path('top/', Top.as_view()), 
+    path('topid/', TopId.as_view()), 
 ]
