@@ -5,8 +5,9 @@ FROM python:3.14.2-alpine3.23
 WORKDIR /usr/src/app
 
 # set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# deprecated (relevant python:3.11.4-slim-buster)
+# ENV PYTHONDONTWRITEBYTECODE 1
+# ENV PYTHONUNBUFFERED 1
 
 # install dependencies
 RUN pip install --upgrade pip
