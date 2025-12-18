@@ -44,7 +44,7 @@ class TopBrightness(APIView):
                 "absmag": 2.39,
                 "spect": "F5",
                 "ci": 0.482,
-        q        "x": 219.740502,
+                "x": 219.740502,
                 "y": 0.003449,
                 "z": 4.177065,
                 "vx": 4e-8,
