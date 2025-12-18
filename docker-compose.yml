@@ -8,11 +8,19 @@ services:
     restart: always
     networks:
       - app-network
-  api: 
+  api:
     build:
       context: API
       dockerfile: Dockerfile
     restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./API/app:/usr/src/app
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
     networks:
       - app-network
 
@@ -28,7 +36,7 @@ services:
       - ./mariaDB/data:/var/lib/mysql:rw
     networks:
       - app-network
-    
+
 networks:
    app-network:
      driver: bridge
