@@ -91,7 +91,7 @@ export async function getStars(opts: {
 
     // if (!base) throw new Error("Missing VITE_API_BASE_URL");
 
-    const url = new URL(`http://localhost:8000/api/sky/topbrightness/`);
+    const url = new URL(`http://localhost:8000/api/sky/topid/`);
     // url.searchParams.set("kind", opts.kind);
     // url.searchParams.set("limit", String(limit));
 

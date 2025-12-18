@@ -17,8 +17,13 @@ services:
       - ./API/app:/usr/src/app
     command: python manage.py runserver 0.0.0.0:8000
     environment:
-      - PYTHONDONTWRITEBYTECODE=1
-      - PYTHONUNBUFFERED=1
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+      MYSQL_HOST: db
+      MYSQL_PORT: "3306"
+      MYSQL_DATABASE: sky_map
+      MYSQL_USER: sky
+      MYSQL_PASSWORD: changeme
     networks:
       - app-network
 
