@@ -13,15 +13,16 @@ import {
     starPixelRadius,
 } from "./utils";
 
-type OverlayKind = "brightest" | "nearest" | "hottest" | "largest";
+type OVERLAY_KIND = "brightest" | "nearest" | "hottest" | "largest";
 
-export default function SkyMap({
+export default function SkyMap(
+    {
                                    kind = "nearest",
                                    limit = 50,
                                    width = 900,
                                    height = 650,
                                }: {
-    kind?: OverlayKind;
+    kind?: OVERLAY_KIND;
     limit?: number;
     width?: number;
     height?: number;

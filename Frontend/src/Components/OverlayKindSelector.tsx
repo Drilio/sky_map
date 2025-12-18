@@ -1,7 +1,8 @@
 
 export type OverlayKind = "brightest" | "nearest" | "hottest" | "largest";
 
-export default function OverlayKindSelector({
+export default function OverlayKindSelector(
+    {
                                                 value,
                                                 onChange,
                                             }: {
