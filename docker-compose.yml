@@ -21,6 +21,20 @@ services:
       - PYTHONUNBUFFERED=1
     networks:
       - app-network
+
+  db:
+    image: mariadb:latest
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASS}
+      MARIADB_DATABASE: ${DB_DATABASE}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASS}
+    restart: unless-stopped
+    volumes:
+      - ./mariaDB/data:/var/lib/mysql:rw
+    networks:
+      - app-network
+
 networks:
-   app-network:
-     driver: bridge
+  app-network:
+    driver: bridge
