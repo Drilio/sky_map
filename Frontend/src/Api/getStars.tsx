@@ -69,9 +69,9 @@ export class ApiError extends Error {
     }
 }
 
-
-const API_BASE =
-    (import.meta as any).env?.VITE_API_BASE_URL ?? "";
+//
+// const API_BASE =
+//     (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 function assertStarArray(data: unknown): asserts data is Star[] {
     if (!Array.isArray(data)) throw new Error("Expected JSON array");
@@ -90,18 +90,18 @@ export async function getStars(opts: {
     limit?: number;
     signal?: AbortSignal;
 }): Promise<Star[]> {
-    const limit = opts.limit ?? 50;
-    const base = import.meta.env.VITE_API_BASE_URL;
+    // const limit = opts.limit ?? 50;
+    // const base = import.meta.env.VITE_API_BASE_URL;
 
-    if (!base) throw new Error("Missing VITE_API_BASE_URL");
+    // if (!base) throw new Error("Missing VITE_API_BASE_URL");
 
-    const url = new URL(`${API_BASE}/api/overlays/top`, window.location.origin);
-    url.searchParams.set("kind", opts.kind);
-    url.searchParams.set("limit", String(limit));
+    const url = new URL(`http://localhost:8000/api/sky/topbrightness/`);
+    // url.searchParams.set("kind", opts.kind);
+    // url.searchParams.set("limit", String(limit));
 
     const res = await fetch(url.toString(), {
         method: "GET",
-        headers: { Accept: "application/json" },
+        headers: {Accept: "application/json"},
         signal: opts.signal,
     });
 
