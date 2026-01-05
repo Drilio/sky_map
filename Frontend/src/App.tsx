@@ -14,7 +14,10 @@ export default function App() {
 
     const [cities, setCities] = useState<City[]>([]);
     const [selectedCity, setSelectedCity] = useState<City | undefined>();
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [selectedDate, setSelectedDate] = useState<string>(() => {
+        const now = new Date();
+        return now.toISOString().slice(0, 19).replace("T", " ");
+    });
     const [latitude, setLatitude] = useState<number>(0);
     const [longitude, setLongitude] = useState<number>(0);
 
