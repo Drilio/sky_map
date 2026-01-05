@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core import serializers
-# import numpy as np
+import numpy as np
 from datetime import datetime
 from .models import Star
 from .models import CitiesModel
@@ -36,186 +36,160 @@ class Cities(APIView):
         return Response(list(all_cities))
 
 class SkyView(APIView):
+    def julian_date(self, dt):
+        """
+        Convert a datetime object (UTC) to Julian Date.
 
-    # def julian_date(self, dt):
-    #     """Calculate Julian Date from datetime object"""
-    #     a = (14 - dt.month) // 12
-    #     y = dt.year + 4800 - a
-    #     m = dt.month + 12 * a - 3
-        
-    #     jdn = dt.day + (153 * m + 2) // 5 + 365 * y + y // 4 - y // 100 + y // 400 - 32045
-    #     jd = jdn + (dt.hour - 12) / 24.0 + dt.minute / 1440.0 + dt.second / 86400.0
-        
-    #     return jd
-    
-    # def local_sidereal_time(self, dt):
-    #     """Calculate Local Sidereal Time"""
-    #     jd = self.julian_date(dt)
-        
-    #     # Days since J2000.0
-    #     d = jd - 2451545.0
-        
-    #     # Greenwich Mean Sidereal Time at 0h UT
-    #     gmst = 18.697374558 + 24.06570982441908 * d
-        
-    #     # Normalize to 0-24 hours
-    #     gmst = gmst % 24
-        
-    #     # Convert to radians and add longitude
-    #     lst = gmst + np.degrees(self.longitude) / 15.0
-    #     lst = (lst % 24) * 15  # Convert to degrees
-        
-    #     return np.radians(lst)
-    
-    # def equatorial_to_horizontal(self, ra, dec, lst):
-    #     """
-    #     Convert equatorial coordinates (RA, Dec) to horizontal (Alt, Az)
-        
-    #     Parameters:
-    #     - ra: Right Ascension in radians
-    #     - dec: Declination in radians
-    #     - lst: Local Sidereal Time in radians
-        
-    #     Returns:
-    #     - altitude: Altitude angle in degrees
-    #     - azimuth: Azimuth angle in degrees (0° = North, 90° = East)
-    #     """
-    #     # Hour Angle
-    #     ha = lst - ra
-        
-    #     # Altitude
-    #     sin_alt = (np.sin(dec) * np.sin(self.latitude) + 
-    #                np.cos(dec) * np.cos(self.latitude) * np.cos(ha))
-    #     altitude = np.arcsin(sin_alt)
-        
-    #     # Azimuth
-    #     cos_az = ((np.sin(dec) - np.sin(altitude) * np.sin(self.latitude)) / 
-    #               (np.cos(altitude) * np.cos(self.latitude)))
-        
-    #     # Clamp cos_az to [-1, 1] to avoid numerical errors
-    #     cos_az = np.clip(cos_az, -1, 1)
-    #     azimuth = np.arccos(cos_az)
-        
-    #     # Adjust azimuth based on hour angle
-    #     if np.sin(ha) > 0:
-    #         azimuth = 2 * np.pi - azimuth
-        
-    #     return np.degrees(altitude), np.degrees(azimuth)
-    
-    # def calculate_star_positions(self, stars_data, dt):
-    #     """
-    #     Calculate positions of all stars for given date/time
-        
-    #     Parameters:
-    #     - stars_data: List of star dictionaries
-    #     - dt: datetime object
-        
-    #     Returns:
-    #     - List of star dictionaries with added alt/az coordinates
-    #     """
-    #     lst = self.local_sidereal_time(dt)
-    #     visible_stars = []
-        
-    #     for star in stars_data:
-    #         ra = star['rarad']
-    #         dec = star['decrad']
-            
-    #         altitude, azimuth = self.equatorial_to_horizontal(ra, dec, lst)
-            
-    #         star_info = star.copy()
-    #         star_info['altitude'] = altitude
-    #         star_info['azimuth'] = azimuth
-    #         star_info['visible'] = altitude > 0  # Star is visible if above horizon
-            
-    #         visible_stars.append(star_info)
-        
-    #     return visible_stars
-    
-    # def get_visible_stars(self, stars_data, dt, min_altitude=0):
-    #     """
-    #     Get only visible stars above the horizon
-        
-    #     Parameters:
-    #     - stars_data: List of star dictionaries
-    #     - dt: datetime object
-    #     - min_altitude: Minimum altitude in degrees (default 0, can increase to avoid horizon haze)
-        
-    #     Returns:
-    #     - Sorted list of visible stars (brightest first)
-    #     """
-    #     all_stars = self.calculate_star_positions(stars_data, dt)
-    #     visible = [s for s in all_stars if s['altitude'] > min_altitude]
-        
-    #     # Sort by magnitude (brightness)
-    #     visible.sort(key=lambda x: x['mag'])
-        
-    #     return visible
-    
-    # def print_star_chart(self, stars_data, dt, top_n=20):
-    #     """
-    #     Print a text-based star chart
-        
-    #     Parameters:
-    #     - stars_data: List of star dictionaries
-    #     - dt: datetime object
-    #     - top_n: Number of brightest stars to display
-    #     """
-    #     visible = self.get_visible_stars(stars_data, dt)
-        
-    #     print(f"\n{'='*80}")
-    #     print(f"SKY VIEW FROM PARIS")
-    #     print(f"Date/Time: {dt.strftime('%Y-%m-%d %H:%M:%S')}")
-    #     print(f"{'='*80}\n")
-    #     print(f"Total visible stars: {len(visible)}")
-    #     print(f"\nTop {min(top_n, len(visible))} brightest stars:\n")
-    #     print(f"{'Star ID':<10} {'HIP':<10} {'Mag':<8} {'Alt°':<10} {'Az°':<10} {'Const':<8}")
-    #     print(f"{'-'*70}")
-        
-    #     for star in visible[:top_n]:
-    #         print(f"{star['id']:<10} {star['hip']:<10} {star['mag']:<8.2f} "
-    #               f"{star['altitude']:<10.1f} {star['azimuth']:<10.1f} {star['con']:<8}")
+        Julian Date is a continuous time scale used in astronomy
+        to calculate Earth's rotation independently of calendars.
 
+        Input:
+        - dt: datetime (UTC)
 
-# # Example usage
-# if __name__ == "__main__":
-#     # Your star data
-#     stars_data = [
-#         # ... (paste your JSON star data here)
-#     ]
+        Output:
+        - jd: float, Julian date (e.g., 2460000.5)
+        """   
+        a = (14 - dt.month) // 12
+        y = dt.year + 4800 - a
+        m = dt.month + 12 * a - 3
+        
+        jdn = dt.day + (153 * m + 2) // 5 + 365 * y + y // 4 - y // 100 + y // 400 - 32045
+        jd = jdn + (dt.hour - 12) / 24.0 + dt.minute / 1440.0 + dt.second / 86400.0
+        
+        return jd
     
-#     # Create sky view calculator for Paris
-#     sky = SkyView(latitude=48.8566, longitude=2.3522)
+    def local_sidereal_time(self, dt, longitude):
+        """
+        Compute Local Sidereal Time (LST).
+
+        LST represents Earth's rotation angle relative to the stars
+        instead of the Sun. It determines how the celestial sphere rotates
+        with time.
+
+        Inputs:
+        - dt: datetime (UTC)
+        - longitude: geographic longitude in radians
+
+        Output:
+        - lst: float, angle in radians (0 → 2π)
+        """
+        jd = self.julian_date(dt)
+        
+        # Days since J2000.0
+        d = jd - 2451545.0
+        
+        # Greenwich Mean Sidereal Time at 0h UT
+        gmst = 18.697374558 + 24.06570982441908 * d
+        
+        # Normalize to 0-24 hours
+        gmst = gmst % 24
+        
+        # Convert to radians and add longitude
+        lst = gmst + np.degrees(longitude) / 15.0
+        lst = (lst % 24) * 15  # Convert to degrees
+        
+        return np.radians(lst)
     
-#     # Example 1: Current time
-#     now = datetime.now()
-#     sky.print_star_chart(stars_data, now, top_n=20)
-    
-#     # Example 2: Specific date and time
-#     specific_time = datetime(2024, 12, 31, 22, 0, 0)  # New Year's Eve at 10 PM
-#     sky.print_star_chart(stars_data, specific_time, top_n=15)
-    
-#     # Example 3: Get visible stars programmatically
-#     visible_stars = sky.get_visible_stars(stars_data, now, min_altitude=10)
-#     print(f"\n\nStars above 10° altitude: {len(visible_stars)}")
-    
-#     # Example 4: Get position of a specific star (e.g., Sirius - id 32263)
-#     all_positions = sky.calculate_star_positions(stars_data, now)
-#     sirius = next(s for s in all_positions if s['id'] == 32263)
-#     print(f"\nSirius position:")
-#     print(f"  Altitude: {sirius['altitude']:.2f}°")
-#     print(f"  Azimuth: {sirius['azimuth']:.2f}°")
-#     print(f"  Visible: {sirius['visible']}")
+    def rotate_cartesian_equatorial_to_local(self, x, y, z, latitude, lst):
+        """
+        Transform fixed equatorial Cartesian coordinates (x,y,z) 
+        into local Cartesian coordinates for a given observer.
+
+        Step 1:
+        - Rotate around Z-axis using Local Sidereal Time (lst)
+          → rotates the sky according to the current time
+
+        Step 2:
+        - Rotate around X-axis according to observer's latitude
+          → inclines the sky according to position on Earth
+
+        Inputs:
+        - x, y, z: equatorial Cartesian coordinates (parsecs or arbitrary units)
+        - latitude: observer latitude in radians
+        - lst: local sidereal time in radians
+
+        Outputs:
+        - x2, y2: local Cartesian coordinates projected for front-end
+        """
+        x1 =  x * np.cos(lst) + y * np.sin(lst)
+        y1 = -x * np.sin(lst) + y * np.cos(lst)
+
+        x2 = x1
+        y2 = y1 * np.cos(latitude) + z * np.sin(latitude)
+
+        return x2, y2
+
+    def calculate_star_positions(self, latitude, longitude, stars_data, dt):
+        """
+        Compute the apparent positions of all stars for a given observer.
+
+        For each star:
+        - take its original Cartesian coordinates (x, y, z)
+        - apply time rotation (LST)
+        - apply latitude rotation
+
+        Output is in the same Cartesian frame as the front-end expects.
+
+        Inputs:
+        - latitude: in radians
+        - longitude: in radians
+        - stars_data: Django QuerySet of Star objects
+        - dt: datetime object (UTC)
+
+        Outputs:
+        - List of dictionaries with updated x/y positions
+        """
+        lst = self.local_sidereal_time(dt, longitude)
+        stars_out = []
+        
+        for star in stars_data:
+            x, y = self.rotate_cartesian_equatorial_to_local(
+                star.x,
+                star.y,
+                star.z,
+                latitude,
+                lst
+            )
+
+            
+            stars_out.append({
+            "id": star.id,
+            "ra": star.ra,
+            "dec": star.dec,
+            "mag": star.mag,
+            "x": x,
+            "y": y,
+            "initial_x": star.x,
+            "initial_y": star.y
+        })
+
+        return stars_out
+
     def get(self, request, **kwargs):
+        """
+        Main API endpoint.
+
+        Steps:
+        1. Extract latitude, longitude, datetime from the URL
+        2. Select stars (nearest or by brightness)
+        3. Convert latitude/longitude to radians
+        4. Compute local Cartesian positions for all stars
+        5. Return JSON response to front-end
+        """
         possible_filter_mapping = {
             "brightness":"mag"
         }
-        latitude = self.kwargs.get('latitude')
-        longitude = self.kwargs.get('longitude')
-        datetime = self.kwargs.get('datetime')
+        ref_latitude = float(self.kwargs.get('latitude'))
+        ref_longitude = float(self.kwargs.get('longitude'))
+        dt = datetime.strptime(self.kwargs.get('datetime'), "%Y-%m-%d %H:%M:%S") 
         stars_filter = self.kwargs.get('stars_filter')
+        limit = self.kwargs.get('limit')
         if stars_filter == "nearest":
-            stars_to_show = Star.objects.annotate(dist2=Power(F("x") - Value(latitude), 2) + Power(F("y") - Value(longitude), 2)).order_by("dist2")[:50]
+            stars_to_show = Star.objects.annotate(dist2=Power(F("x") - Value(ref_latitude), 2) + Power(F("y") - Value(ref_longitude), 2)).order_by("dist2")[:limit]
         else:
-            stars_to_show = Star.objects.order_by(possible_filter_mapping[stars_filter])[:50]
-        
-        return Response(serializers.serialize("json", stars_to_show))
+            stars_to_show = Star.objects.order_by(possible_filter_mapping[stars_filter])[:limit]
+        ref_latitude_in_rad = np.radians(ref_latitude)
+        ref_longitude_in_rad = np.radians(ref_longitude)
+        all_stars_pos = self.calculate_star_positions(ref_latitude_in_rad, ref_longitude_in_rad, stars_to_show, dt) 
+
+        return Response(all_stars_pos)
