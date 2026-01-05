@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
-import {getStars} from "../Api/getStars";
+import {getStars} from "../Api/getStars.ts";
 import {
     clamp,
     computeFitScale,
