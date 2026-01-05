@@ -7,19 +7,20 @@ import CoordinateInput from "./Components/CoodinateInput.tsx";
 import './App.css'
 import type {City, OVERLAY_KIND} from "./Components/utils.ts";
 import {getCities} from "./Api/getCities.ts";
+import DateTimePicker from "./Components/DateTimePicker.tsx";
 
 export default function App() {
     const [kind, setKind] = useState<OVERLAY_KIND>("nearest");
 
     const [cities, setCities] = useState<City[]>([]);
     const [selectedCity, setSelectedCity] = useState<City | undefined>();
-
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [latitude, setLatitude] = useState<number>(0);
     const [longitude, setLongitude] = useState<number>(0);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
+    console.log(selectedDate)
     useEffect(() => {
         const loadCities = async () => {
             try {
@@ -56,6 +57,10 @@ export default function App() {
                     cities={cities}
                     value={selectedCity}
                     onCitySelect={setSelectedCity}
+                />
+                <DateTimePicker
+                    value={selectedDate}
+                    onChange={setSelectedDate}
                 />
             </div>
 
