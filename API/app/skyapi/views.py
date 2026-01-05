@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Star
+from .models import Cities
 
 PARIS_LAT = 48.8566
 MIN_DEC_VISIBLE = -(90 - PARIS_LAT)  # -41.1434
@@ -23,3 +24,8 @@ class TopBrightestParis(APIView):
             )
         )
         return Response(rows)
+    
+class Cities(APIView):
+    def get(self, requests):
+        return
+
