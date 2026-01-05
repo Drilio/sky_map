@@ -21,24 +21,36 @@ export default function SkyMap(
         limit = 50,
         width = 900,
         height = 650,
+        latitude,
+        longitude,
+        datetime,
     }: {
         kind?: OVERLAY_KIND;
         limit?: number;
         width?: number;
         height?: number;
+        latitude: number;
+        longitude: number;
+        datetime: string;
     }) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [stars, setStars] = useState<Star[]>([]);
     const [err, setErr] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         const ac = new AbortController();
         setErr(null);
+        setLoading(true);
 
-        getStars({kind, limit, signal: ac.signal})
+        getStars({datetime, latitude, longitude, kind, limit})
             .then((rows) => {
+                if (!Array.isArray(rows)) {
+                    throw new Error("Invalid response format from server");
+                }
+
                 setStars(
-                    rows.map((s) => ({
+                    rows.map((s: Star) => ({
                         id: s.id,
                         x: s.x,
                         y: s.y,
@@ -48,15 +60,28 @@ export default function SkyMap(
                         con: s.con ?? undefined,
                     }))
                 );
+                setErr(null);
             })
             .catch((e: any) => {
                 if (e?.name === "AbortError") return;
-                setErr(e instanceof Error ? e.message : String(e));
+
+                // Handle different error types
+                let errorMessage = "Failed to load stars";
+                if (e instanceof Error) {
+                    errorMessage = e.message;
+                } else if (typeof e === "string") {
+                    errorMessage = e;
+                }
+
+                setErr(errorMessage);
                 setStars([]);
+            })
+            .finally(() => {
+                setLoading(false);
             });
 
         return () => ac.abort();
-    }, [kind, limit]);
+    }, [kind, limit, latitude, longitude, datetime]);
 
     const diskRadius = Math.min(width, height) * 0.42;
     const cx = width / 2;
@@ -233,7 +258,25 @@ export default function SkyMap(
                 onWheel={onWheel}
             />
 
-            {err && (
+            {loading && (
+                <div
+                    style={{
+                        position: "absolute",
+                        left: 12,
+                        top: 12,
+                        padding: "8px 10px",
+                        borderRadius: 10,
+                        background: "rgba(40,80,140,0.85)",
+                        color: "rgba(255,255,255,0.95)",
+                        fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
+                        fontSize: 12,
+                    }}
+                >
+                    Loading stars...
+                </div>
+            )}
+
+            {err && !loading && (
                 <div
                     style={{
                         position: "absolute",
@@ -245,13 +288,16 @@ export default function SkyMap(
                         color: "rgba(255,255,255,0.95)",
                         fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
                         fontSize: 12,
+                        maxWidth: 300,
+                        wordWrap: "break-word",
                     }}
                 >
+                    <div style={{fontWeight: 600, marginBottom: 4}}>Error</div>
                     {err}
                 </div>
             )}
 
-            {hoveredStar && hover && (
+            {hoveredStar && hover && !loading && (
                 <div
                     style={{
                         position: "absolute",

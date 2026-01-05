@@ -1,14 +1,12 @@
-import "./App.css";
-import SkyMap from "./Components/SkyMap";
-import OverlayKindSelector from "./Components/OverlayKindSelector.tsx";
-import {useState, useEffect} from "react";
-import type {OverlayKind} from "./Api/getStars.ts";
+import SkyMap from "./Components/SkyMap.tsx";
 import CitySelector from "./Components/CitySelector.tsx";
-import type {City} from "./Components/utils.ts";
+import OverlayKindSelector from "./Components/OverlayKindSelector.tsx";
+import {useEffect, useState} from "react";
+import type {City, OVERLAY_KIND} from "./Components/utils.ts";
 import {getCities} from "./Api/getCities.ts";
 
 export default function App() {
-    const [kind, setKind] = useState<OverlayKind>("nearest");
+    const [kind, setKind] = useState<OVERLAY_KIND>("nearest");
     const [selectedCity, setSelectedCity] = useState<City | undefined>();
     const [cities, setCities] = useState<City[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -38,6 +36,10 @@ export default function App() {
         return <div>Error: {error}</div>;
     }
 
+    const latitude = selectedCity?.lat ?? 0;
+    const longitude = selectedCity?.lng ?? 0;
+    const datetime = new Date().toISOString();
+
     return (
         <div style={{padding: 16}}>
             <div style={{
@@ -57,6 +59,9 @@ export default function App() {
                 <SkyMap
                     kind={kind}
                     limit={50}
+                    latitude={latitude}
+                    longitude={longitude}
+                    datetime={datetime}
                 />
             </div>
         </div>

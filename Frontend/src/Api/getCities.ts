@@ -1,4 +1,3 @@
-import {ApiError} from "./getStars.ts";
 import type {City} from "../Components/utils.ts";
 
 
@@ -11,13 +10,8 @@ export async function getCities(): Promise<City[]> {
     });
 
     if (!res.ok) {
-        let body: unknown;
-        try {
-            body = await res.json();
-        } catch {
-            body = await res.text().catch(() => undefined);
-        }
-        throw new ApiError(`GET ${url.pathname} failed`, res.status, body);
+
+        throw new Error(`GET ${url.pathname} failed`);
     }
 
     return await res.json();
