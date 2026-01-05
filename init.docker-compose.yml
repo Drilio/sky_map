@@ -13,6 +13,7 @@ services:
       - db
     volumes:
       - ./data/hyg_v42.csv:/tmp/hyg_v42.csv
+      - ./data/worldcities.csv:/tmp/worldcities.csv
       - ./data/populate_database_with_csv.py:/tmp/populate_database_with_csv.py
     command: python3 /tmp/populate_database_with_csv.py
     networks:
