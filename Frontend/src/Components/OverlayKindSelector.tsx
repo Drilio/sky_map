@@ -1,22 +1,21 @@
-
-export type OverlayKind = "brightest" | "nearest" | "hottest" | "largest";
+import type {OVERLAY_KIND} from "./utils.ts";
 
 export default function OverlayKindSelector(
     {
-                                                value,
-                                                onChange,
-                                            }: {
-    value: OverlayKind;
-    onChange: (next: OverlayKind) => void;
-}) {
+        value,
+        onChange,
+    }: {
+        value: OVERLAY_KIND;
+        onChange: (next: OVERLAY_KIND) => void;
+    }) {
     return (
-        <label style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
-      <span style={{ fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial", fontSize: 13 }}>
+        <label style={{display: "inline-flex", alignItems: "center", gap: 10}}>
+      <span style={{fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial", fontSize: 13}}>
         Overlay
       </span>
             <select
                 value={value}
-                onChange={(e) => onChange(e.target.value as OverlayKind)}
+                onChange={(e) => onChange(e.target.value as OVERLAY_KIND)}
                 style={{
                     padding: "6px 10px",
                     borderRadius: 10,

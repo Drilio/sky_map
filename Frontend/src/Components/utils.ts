@@ -1,3 +1,5 @@
+export type OVERLAY_KIND = "brightest" | "nearest" | "hottest" | "largest";
+
 export type Star = {
     id: number;
     x: number;
@@ -46,10 +48,10 @@ export function toPoints(stars: Star[]): StarPoint[] {
 }
 
 export function computeWorldCenter(pts: StarPoint[]) {
-    if (!pts.length) return { cxw: 0, cyw: 0 };
+    if (!pts.length) return {cxw: 0, cyw: 0};
     const sx = pts.reduce((a, p) => a + p.X, 0);
     const sy = pts.reduce((a, p) => a + p.Y, 0);
-    return { cxw: sx / pts.length, cyw: sy / pts.length };
+    return {cxw: sx / pts.length, cyw: sy / pts.length};
 }
 
 export function computeFitScale(params: {
@@ -60,7 +62,7 @@ export function computeFitScale(params: {
     maxScale?: number;
     minScale?: number;
 }) {
-    const { pts, worldCenter, diskRadius } = params;
+    const {pts, worldCenter, diskRadius} = params;
     const margin = params.margin ?? 0.92;
     const maxScale = params.maxScale ?? 1;
     const minScale = params.minScale ?? 0.02;
@@ -111,18 +113,18 @@ export function pickStar(params: {
     my: number;
     hitPad?: number;
 }) {
-    const { pts, view, cx, cy, worldCenter, mx, my } = params;
+    const {pts, view, cx, cy, worldCenter, mx, my} = params;
     const hitPad = params.hitPad ?? 6;
 
     let best: { id: number; d2: number } | null = null;
 
     for (const p of pts) {
-        const { sx, sy } = toScreen(p, view, { cx, cy, worldCenter });
+        const {sx, sy} = toScreen(p, view, {cx, cy, worldCenter});
         const r = starPixelRadius(p.MAG) + hitPad;
         const dx = mx - sx;
         const dy = my - sy;
         const d2 = dx * dx + dy * dy;
-        if (d2 <= r * r && (!best || d2 < best.d2)) best = { id: p.id, d2 };
+        if (d2 <= r * r && (!best || d2 < best.d2)) best = {id: p.id, d2};
     }
 
     return best?.id ?? null;
