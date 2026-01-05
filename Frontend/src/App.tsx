@@ -1,39 +1,36 @@
-import "./App.css";
-import SkyMap from "./Components/SkyMap";
-import OverlayKindSelector from "./Components/OverlayKindSelector.tsx";
-import {useState, useEffect} from "react";
-import type {OverlayKind} from "./Api/getStars.tsx";
-import CitySelector from "./Components/CitySelector.tsx";
-import type {City} from "./Components/CitySelector";
+import {useEffect, useState} from "react";
 
-// Mock function to simulate API call - replace with your actual API call
-async function fetchCities(): Promise<City[]> {
-    // In a real app, you would call your backend API here
-    return [
-        {id: "ny", name: "New York", lat: 40.7128, lng: -74.0060},
-        {id: "la", name: "Los Angeles", lat: 34.0522, lng: -118.2437},
-        {id: "ldn", name: "London", lat: 51.5074, lng: -0.1278},
-        {id: "paris", name: "Paris", lat: 48.8566, lng: 2.3522},
-        {id: "tokyo", name: "Tokyo", lat: 35.6762, lng: 139.6503},
-        {id: "sydney", name: "Sydney", lat: -33.8688, lng: 151.2093},
-    ];
-}
+import SkyMap from "./Components/SkyMap.tsx";
+import CitySelector from "./Components/CitySelector.tsx";
+import OverlayKindSelector from "./Components/OverlayKindSelector.tsx";
+import CoordinateInput from "./Components/CoodinateInput.tsx";
+import './App.css'
+import type {City, OVERLAY_KIND} from "./Components/utils.ts";
+import {getCities} from "./Api/getCities.ts";
+import DateTimePicker from "./Components/DateTimePicker.tsx";
 
 export default function App() {
-    const [kind, setKind] = useState<OverlayKind>("nearest");
-    const [selectedCity, setSelectedCity] = useState<string>("none");
-    const [cities, setCities] = useState<City[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [kind, setKind] = useState<OVERLAY_KIND>("nearest");
 
+    const [cities, setCities] = useState<City[]>([]);
+    const [selectedCity, setSelectedCity] = useState<City | undefined>();
+    const [selectedDate, setSelectedDate] = useState<string>(() => {
+        const now = new Date();
+        return now.toISOString().slice(0, 19).replace("T", " ");
+    });
+    const [latitude, setLatitude] = useState<number>(0);
+    const [longitude, setLongitude] = useState<number>(0);
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    console.log(selectedDate)
     useEffect(() => {
         const loadCities = async () => {
             try {
-                const citiesData = await fetchCities();
-                setCities(citiesData);
+                setCities(await getCities());
             } catch (err) {
-                setError("Failed to load cities");
                 console.error(err);
+                setError("Failed to load cities");
             } finally {
                 setLoading(false);
             }
@@ -42,36 +39,54 @@ export default function App() {
         loadCities();
     }, []);
 
-    if (loading) {
-        return <div>Loading cities...</div>;
-    }
+    // ✅ Sync coordinates when a city is selected
+    useEffect(() => {
+        if (selectedCity) {
+            setLatitude(selectedCity.lat);
+            setLongitude(selectedCity.lng);
+        }
+    }, [selectedCity]);
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    if (loading) return <div>Loading cities...</div>;
+    if (error) return <div>Error: {error}</div>;
+
+    const datetime = new Date().toISOString();
 
     return (
-        <div style={{padding: 16}}>
-            <div style={{
-                display: "flex",
-                gap: 16,
-                alignItems: "center",
-                marginBottom: 12
-            }}>
+        <div className="app">
+            <div className="top-bar">
                 <OverlayKindSelector value={kind} onChange={setKind}/>
                 <CitySelector
                     cities={cities}
                     value={selectedCity}
-                    onChange={setSelectedCity}
+                    onCitySelect={setSelectedCity}
+                />
+                <DateTimePicker
+                    value={selectedDate}
+                    onChange={setSelectedDate}
                 />
             </div>
-            <div style={{marginTop: 12}}>
-                <SkyMap
-                    kind={kind}
-                    limit={50}
-                    selectedCity={selectedCity}
-                    cities={cities}
-                />
+
+            <div className="content-wrapper">
+                <div className="main-layout">
+                    <CoordinateInput
+                        initialLatitude={latitude}
+                        initialLongitude={longitude}
+                        onCoordinatesChange={(lat, lng) => {
+                            setLatitude(lat);
+                            setLongitude(lng);
+                            setSelectedCity(undefined);
+                        }}
+                    />
+
+                    <SkyMap
+                        kind={kind}
+                        limit={50}
+                        latitude={latitude}
+                        longitude={longitude}
+                        datetime={datetime}
+                    />
+                </div>
             </div>
         </div>
     );

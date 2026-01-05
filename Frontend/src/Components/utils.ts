@@ -129,3 +129,11 @@ export function pickStar(params: {
 
     return best?.id ?? null;
 }
+
+
+export type City = {
+    id: number;
+    city: string;
+    lat: number;
+    lng: number;
+};

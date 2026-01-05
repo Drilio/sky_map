@@ -1,31 +1,49 @@
-export type City = {
-    id: string;
-    name: string;
-    lat: number;
-    lng: number;
+import type {City} from "./utils.ts";
+
+type Props = {
+    cities: City[];
+    value?: City;
+    onCitySelect: (next: City | undefined) => void;
 };
 
 export default function CitySelector(
     {
         cities,
         value,
-        onChange,
-    }: {
-        cities: City[];
-        value: string;
-        onChange: (next: string) => void;
-    }) {
+        onCitySelect,
+    }: Props) {
     return (
-        <label style={{display: "inline-flex", alignItems: "center", gap: 10}}>
-      <span style={{
-          fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
-          fontSize: 13
-      }}>
-        City View
-      </span>
+        <label
+            style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 10,
+            }}
+        >
+            <span
+                style={{
+                    fontFamily:
+                        "system-ui, -apple-system, Segoe UI, Roboto, Arial",
+                    fontSize: 13,
+                }}
+            >
+                City
+            </span>
+
             <select
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
+                value={value?.id ?? "none"}
+                onChange={(e) => {
+                    const selected = e.target.value;
+
+                    onCitySelect(
+                        selected === "none"
+                            ? undefined
+                            : cities.find(
+                                (c) =>
+                                    c.id === Number(selected)
+                            )
+                    );
+                }}
                 style={{
                     padding: "6px 10px",
                     borderRadius: 10,
@@ -33,12 +51,14 @@ export default function CitySelector(
                     background: "rgba(20,24,30,0.92)",
                     color: "rgba(255,255,255,0.92)",
                     outline: "none",
+                    cursor: "pointer",
                 }}
             >
-                <option value="none">None (3D View)</option>
+                <option value="none">none</option>
+
                 {cities.map((city) => (
                     <option key={city.id} value={city.id}>
-                        {city.name}
+                        {city.city}
                     </option>
                 ))}
             </select>
