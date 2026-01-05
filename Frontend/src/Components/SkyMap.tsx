@@ -146,7 +146,6 @@ export default function SkyMap(
         g.lineTo(centerX, centerY + diskRadius);
         g.stroke();
 
-        // Draw stars
         for (const p of pts) {
             const {sx, sy} = toScreen(p, view, {cx, cy, worldCenter});
             const dx = sx - centerX;
@@ -160,7 +159,6 @@ export default function SkyMap(
             g.fill();
         }
 
-        // Draw hover ring
         if (hover) {
             const p = pts.find((q) => q.id === hover.starId);
             if (p) {

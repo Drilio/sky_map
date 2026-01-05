@@ -1,0 +1,31 @@
+.app {
+    padding: 16px;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.top-bar {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 16px;
+    justify-content: center;
+}
+
+.main-layout {
+    display: grid;
+    grid-template-columns: 360px minmax(600px, 1fr);
+    gap: 16px;
+    align-items: start;
+
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+
+    height: calc(100% - 56px);
+}
+
+.main-layout > :last-child {
+    width: 100%;
+    height: 100%;
+}
