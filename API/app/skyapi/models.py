@@ -39,3 +39,14 @@ class Star(models.Model):
     class Meta:
         db_table = "stars"
         managed = False
+
+
+class CitiesModel(models.Model):
+    id = models.IntegerField(primary_key=True)
+    city = models.CharField(max_length=23)
+    lat = models.FloatField()
+    lng = models.FloatField()
+
+    class Meta:
+        db_table = "cities"
+        managed = False
