@@ -1,25 +1,36 @@
+import {useEffect, useState} from "react";
+
 import SkyMap from "./Components/SkyMap.tsx";
 import CitySelector from "./Components/CitySelector.tsx";
 import OverlayKindSelector from "./Components/OverlayKindSelector.tsx";
-import {useEffect, useState} from "react";
+import CoordinateInput from "./Components/CoodinateInput.tsx";
+import './App.css'
 import type {City, OVERLAY_KIND} from "./Components/utils.ts";
 import {getCities} from "./Api/getCities.ts";
+import DateTimePicker from "./Components/DateTimePicker.tsx";
 
 export default function App() {
     const [kind, setKind] = useState<OVERLAY_KIND>("nearest");
-    const [selectedCity, setSelectedCity] = useState<City | undefined>();
-    const [cities, setCities] = useState<City[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
 
+    const [cities, setCities] = useState<City[]>([]);
+    const [selectedCity, setSelectedCity] = useState<City | undefined>();
+    const [selectedDate, setSelectedDate] = useState<string>(() => {
+        const now = new Date();
+        return now.toISOString().slice(0, 19).replace("T", " ");
+    });
+    const [latitude, setLatitude] = useState<number>(0);
+    const [longitude, setLongitude] = useState<number>(0);
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    console.log(selectedDate)
     useEffect(() => {
         const loadCities = async () => {
             try {
-                const citiesData = await getCities();
-                setCities(citiesData);
+                setCities(await getCities());
             } catch (err) {
-                setError("Failed to load cities");
                 console.error(err);
+                setError("Failed to load cities");
             } finally {
                 setLoading(false);
             }
@@ -28,41 +39,54 @@ export default function App() {
         loadCities();
     }, []);
 
-    if (loading) {
-        return <div>Loading cities...</div>;
-    }
+    // ✅ Sync coordinates when a city is selected
+    useEffect(() => {
+        if (selectedCity) {
+            setLatitude(selectedCity.lat);
+            setLongitude(selectedCity.lng);
+        }
+    }, [selectedCity]);
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    if (loading) return <div>Loading cities...</div>;
+    if (error) return <div>Error: {error}</div>;
 
-    const latitude = selectedCity?.lat ?? 0;
-    const longitude = selectedCity?.lng ?? 0;
     const datetime = new Date().toISOString();
 
     return (
-        <div style={{padding: 16}}>
-            <div style={{
-                display: "flex",
-                gap: 16,
-                alignItems: "center",
-                marginBottom: 12
-            }}>
+        <div className="app">
+            <div className="top-bar">
                 <OverlayKindSelector value={kind} onChange={setKind}/>
                 <CitySelector
                     cities={cities}
                     value={selectedCity}
-                    onChange={setSelectedCity}
+                    onCitySelect={setSelectedCity}
+                />
+                <DateTimePicker
+                    value={selectedDate}
+                    onChange={setSelectedDate}
                 />
             </div>
-            <div style={{marginTop: 12}}>
-                <SkyMap
-                    kind={kind}
-                    limit={50}
-                    latitude={latitude}
-                    longitude={longitude}
-                    datetime={datetime}
-                />
+
+            <div className="content-wrapper">
+                <div className="main-layout">
+                    <CoordinateInput
+                        initialLatitude={latitude}
+                        initialLongitude={longitude}
+                        onCoordinatesChange={(lat, lng) => {
+                            setLatitude(lat);
+                            setLongitude(lng);
+                            setSelectedCity(undefined);
+                        }}
+                    />
+
+                    <SkyMap
+                        kind={kind}
+                        limit={50}
+                        latitude={latitude}
+                        longitude={longitude}
+                        datetime={datetime}
+                    />
+                </div>
             </div>
         </div>
     );

@@ -1,0 +1,92 @@
+.coord-card {
+    padding: 20px;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+}
+
+.coord-header {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #1a1a1a;
+}
+
+.coord-group {
+    margin-bottom: 16px;
+}
+
+.coord-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.coord-hint {
+    font-size: 12px;
+    font-weight: 400;
+    color: #666;
+    margin-left: 6px;
+}
+
+.coord-input {
+    width: 80%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.coord-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.coord-input.error {
+    border-color: #dc3545;
+}
+
+.coord-error {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #dc3545;
+}
+
+.coord-button {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-bottom: 16px;
+}
+
+.coord-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+.coord-examples {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #666;
+}
+
+.coord-examples-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
