@@ -4,13 +4,14 @@ services:
       context: data
       dockerfile: Dockerfile
     environment:
-      DB_PASS: ${DB_PASS} 
-      DB_DATABASE: ${DB_DATABASE} 
-      DB_USER: ${DB_USER} 
-      DB_EXPOSE_PORT: ${DB_EXPOSE_PORT} 
-      DB_HOST: ${DB_HOST} 
+      DB_PASS: ${DB_PASS}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_EXPOSE_PORT: ${DB_EXPOSE_PORT}
+      DB_HOST: ${DB_HOST}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./data/hyg_v42.csv:/tmp/hyg_v42.csv
       - ./data/worldcities.csv:/tmp/worldcities.csv
