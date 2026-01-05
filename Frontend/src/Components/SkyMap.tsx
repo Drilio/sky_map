@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { getStars } from "../Api/getStars";
+import React, {useEffect, useMemo, useRef, useState} from "react";
+import {getStars} from "../Api/getStars";
 import {
     clamp,
     computeFitScale,
@@ -17,18 +17,17 @@ type OVERLAY_KIND = "brightest" | "nearest" | "hottest" | "largest";
 
 export default function SkyMap(
     {
-                                   kind = "nearest",
-                                   limit = 50,
-                                   width = 900,
-                                   height = 650,
-                               }: {
-    kind?: OVERLAY_KIND;
-    limit?: number;
-    width?: number;
-    height?: number;
-}) {
+        kind = "nearest",
+        limit = 50,
+        width = 900,
+        height = 650,
+    }: {
+        kind?: OVERLAY_KIND;
+        limit?: number;
+        width?: number;
+        height?: number;
+    }) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
     const [stars, setStars] = useState<Star[]>([]);
     const [err, setErr] = useState<string | null>(null);
 
@@ -36,7 +35,7 @@ export default function SkyMap(
         const ac = new AbortController();
         setErr(null);
 
-        getStars({ kind, limit, signal: ac.signal })
+        getStars({kind, limit, signal: ac.signal})
             .then((rows) => {
                 setStars(
                     rows.map((s) => ({
@@ -47,7 +46,7 @@ export default function SkyMap(
                         mag: s.mag,
                         proper: s.proper ?? undefined,
                         con: s.con ?? undefined,
-                    })),
+                    }))
                 );
             })
             .catch((e: any) => {
@@ -66,7 +65,7 @@ export default function SkyMap(
     const pts: StarPoint[] = useMemo(() => toPoints(stars), [stars]);
     const worldCenter = useMemo(() => computeWorldCenter(pts), [pts]);
 
-    const [view, setView] = useState<View>({ scale: 1, panX: 0, panY: 0 });
+    const [view, setView] = useState<View>({scale: 1, panX: 0, panY: 0});
     const [hover, setHover] = useState<null | { starId: number; px: number; py: number }>(null);
 
     useEffect(() => {
@@ -81,17 +80,16 @@ export default function SkyMap(
             minScale: 0.02,
         });
 
-        setView((v) => ({ ...v, scale, panX: 0, panY: 0 }));
+        setView((v) => ({...v, scale, panX: 0, panY: 0}));
     }, [pts, worldCenter, diskRadius]);
 
     const draw = () => {
-        const c = canvasRef.current;
-        if (!c) return;
-        const g = c.getContext("2d");
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const g = canvas.getContext("2d");
         if (!g) return;
 
         g.clearRect(0, 0, width, height);
-
         g.fillStyle = "#06080c";
         g.fillRect(0, 0, width, height);
 
@@ -103,6 +101,7 @@ export default function SkyMap(
         g.arc(centerX, centerY, diskRadius, 0, Math.PI * 2);
         g.clip();
 
+        // Draw grid
         g.strokeStyle = "rgba(255,255,255,0.10)";
         g.lineWidth = 1;
         for (let i = 1; i <= 5; i++) {
@@ -122,8 +121,9 @@ export default function SkyMap(
         g.lineTo(centerX, centerY + diskRadius);
         g.stroke();
 
+        // Draw stars
         for (const p of pts) {
-            const { sx, sy } = toScreen(p, view, { cx, cy, worldCenter });
+            const {sx, sy} = toScreen(p, view, {cx, cy, worldCenter});
             const dx = sx - centerX;
             const dy = sy - centerY;
             if (dx * dx + dy * dy > diskRadius * diskRadius) continue;
@@ -135,11 +135,11 @@ export default function SkyMap(
             g.fill();
         }
 
-        // hover ring
+        // Draw hover ring
         if (hover) {
             const p = pts.find((q) => q.id === hover.starId);
             if (p) {
-                const { sx, sy } = toScreen(p, view, { cx, cy, worldCenter });
+                const {sx, sy} = toScreen(p, view, {cx, cy, worldCenter});
                 g.strokeStyle = "rgba(255,255,255,0.65)";
                 g.lineWidth = 1.5;
                 g.beginPath();
@@ -150,6 +150,7 @@ export default function SkyMap(
 
         g.restore();
 
+        // Draw outer circle
         g.strokeStyle = "rgba(255,255,255,0.14)";
         g.lineWidth = 1;
         g.beginPath();
@@ -159,7 +160,6 @@ export default function SkyMap(
 
     useEffect(() => {
         draw();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pts, view, hover, width, height]);
 
     const drag = useRef<{ on: boolean; x: number; y: number } | null>(null);
@@ -175,21 +175,21 @@ export default function SkyMap(
             const dy = my - d.y;
             d.x = mx;
             d.y = my;
-            setView((v) => ({ ...v, panX: v.panX + dx, panY: v.panY + dy }));
+            setView((v) => ({...v, panX: v.panX + dx, panY: v.panY + dy}));
             return;
         }
 
-        const id = pickStar({ pts, view, cx, cy, worldCenter, mx, my });
+        const id = pickStar({pts, view, cx, cy, worldCenter, mx, my});
         if (id == null) {
             if (hover) setHover(null);
             return;
         }
-        setHover({ starId: id, px: mx, py: my });
+        setHover({starId: id, px: mx, py: my});
     };
 
     const onMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
         const rect = e.currentTarget.getBoundingClientRect();
-        drag.current = { on: true, x: e.clientX - rect.left, y: e.clientY - rect.top };
+        drag.current = {on: true, x: e.clientX - rect.left, y: e.clientY - rect.top};
     };
 
     const onMouseUp = () => {
@@ -210,19 +210,19 @@ export default function SkyMap(
             const ay = my - (cy + v.panY);
             const panX = v.panX + ax - ax * (nextScale / v.scale);
             const panY = v.panY + ay - ay * (nextScale / v.scale);
-            return { scale: nextScale, panX, panY };
+            return {scale: nextScale, panX, panY};
         });
     };
 
     const hoveredStar = hover ? pts.find((p) => p.id === hover.starId) : null;
 
     return (
-        <div style={{ position: "relative", width, height }}>
+        <div style={{position: "relative", width, height}}>
             <canvas
                 ref={canvasRef}
                 width={width}
                 height={height}
-                style={{ width, height, display: "block", borderRadius: 14, background: "#06080c" }}
+                style={{width, height, display: "block", borderRadius: 14, background: "#06080c"}}
                 onMouseMove={onMouseMove}
                 onMouseDown={onMouseDown}
                 onMouseUp={onMouseUp}
@@ -268,13 +268,17 @@ export default function SkyMap(
                         pointerEvents: "none",
                     }}
                 >
-                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>
+                    <div style={{fontSize: 13, fontWeight: 700, marginBottom: 6}}>
                         {hoveredStar.LABEL}
                     </div>
-                    <div style={{ opacity: 0.85 }}>Mag: {hoveredStar.MAG.toFixed(2)}</div>
-                    <div style={{ opacity: 0.65, marginTop: 6 }}>
-                        x: {hoveredStar.X.toFixed(6)} | y: {hoveredStar.Y.toFixed(6)} | z:{" "}
-                        {hoveredStar.Z.toFixed(6)}
+                    <div style={{opacity: 0.85}}>
+                        Mag: {hoveredStar.MAG.toFixed(2)}
+                        {hoveredStar.con && ` | Con: ${hoveredStar.con}`}
+                    </div>
+                    <div style={{opacity: 0.65, marginTop: 6}}>
+                        x: {hoveredStar.X.toFixed(6)} |
+                        y: {hoveredStar.Y.toFixed(6)} |
+                        z: {hoveredStar.Z.toFixed(6)}
                     </div>
                 </div>
             )}
