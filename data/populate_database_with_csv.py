@@ -10,10 +10,10 @@ DB_PASS = os.getenv("DB_PASS")
 DB_DATABASE = os.getenv("DB_DATABASE")
 
 csv_to_use = [
-    # {
-    #     "table_name": "stars",
-    #     "csv_path": "/tmp/hyg_v42.csv"
-    # },
+    {
+        "table_name": "stars",
+        "csv_path": "/tmp/hyg_v42.csv"
+    },
     {
         "table_name": "cities",
         "csv_path": "/tmp/worldcities.csv"
