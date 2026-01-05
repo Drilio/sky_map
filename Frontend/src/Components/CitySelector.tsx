@@ -1,9 +1,4 @@
-export type City = {
-    id: string;
-    name: string;
-    lat: number;
-    lng: number;
-};
+import type {City} from "./utils.ts";
 
 export default function CitySelector(
     {
@@ -12,8 +7,8 @@ export default function CitySelector(
         onChange,
     }: {
         cities: City[];
-        value: string;
-        onChange: (next: string) => void;
+        value: City | undefined;
+        onChange: (next: City | undefined) => void;
     }) {
     return (
         <label style={{display: "inline-flex", alignItems: "center", gap: 10}}>
@@ -24,8 +19,19 @@ export default function CitySelector(
         City View
       </span>
             <select
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
+                value={value?.id ?? "none"}
+                onChange={(e) => {
+                    const selectedValue = e.target.value;
+                    if (selectedValue === "none") {
+                        onChange(undefined);
+                    } else {
+                        const selectedId = Number(selectedValue);
+                        const selectedCity = cities.find(city => city.id === selectedId);
+                        if (selectedCity) {
+                            onChange(selectedCity);
+                        }
+                    }
+                }}
                 style={{
                     padding: "6px 10px",
                     borderRadius: 10,
@@ -35,10 +41,10 @@ export default function CitySelector(
                     outline: "none",
                 }}
             >
-                <option value="none">None (3D View)</option>
+                <option value="none">Select a city</option>
                 {cities.map((city) => (
                     <option key={city.id} value={city.id}>
-                        {city.name}
+                        {city.city}
                     </option>
                 ))}
             </select>
