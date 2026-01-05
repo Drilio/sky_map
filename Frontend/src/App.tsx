@@ -5,6 +5,7 @@ import {useState, useEffect} from "react";
 import type {OverlayKind} from "./Api/getStars.tsx";
 import CitySelector from "./Components/CitySelector.tsx";
 import type {City} from "./Components/CitySelector";
+import DateTimePicker from "./Components/DateTimePicker.tsx";
 
 // Mock function to simulate API call - replace with your actual API call
 async function fetchCities(): Promise<City[]> {
@@ -23,6 +24,7 @@ export default function App() {
     const [kind, setKind] = useState<OverlayKind>("nearest");
     const [selectedCity, setSelectedCity] = useState<string>("none");
     const [cities, setCities] = useState<City[]>([]);
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -64,13 +66,16 @@ export default function App() {
                     value={selectedCity}
                     onChange={setSelectedCity}
                 />
+                <DateTimePicker
+                    value={selectedDate}
+                    onChange={setSelectedDate}
+                />
             </div>
             <div style={{marginTop: 12}}>
                 <SkyMap
                     kind={kind}
                     limit={50}
                     selectedCity={selectedCity}
-                    cities={cities}
                 />
             </div>
         </div>

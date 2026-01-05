@@ -26,6 +26,7 @@ export default function SkyMap(
         limit?: number;
         width?: number;
         height?: number;
+        selectedCity?: string;
     }) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [stars, setStars] = useState<Star[]>([]);
