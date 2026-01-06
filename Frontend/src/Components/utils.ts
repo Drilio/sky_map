@@ -6,7 +6,6 @@ export type Star = {
     y: number;
     z?: number;
     mag?: number;
-    proper?: string;
     con?: string;
 };
 
@@ -21,19 +20,10 @@ export type StarPoint = Star & {
     Y: number;
     Z: number;
     MAG: number;
-    LABEL: string;
 };
 
 export function clamp(n: number, a: number, b: number) {
     return Math.max(a, Math.min(b, n));
-}
-
-export function starLabel(s: Star) {
-    const con = (s.con ?? "").toString().trim();
-    if (con) return con;
-    const proper = (s.proper ?? "").toString().trim();
-    if (proper) return proper;
-    return `Star #${s.id}`;
 }
 
 export function toPoints(stars: Star[]): StarPoint[] {
@@ -43,7 +33,6 @@ export function toPoints(stars: Star[]): StarPoint[] {
         Y: Number(s.y) || 0,
         Z: Number(s.z) || 0,
         MAG: typeof s.mag === "number" ? s.mag : Number(s.mag) || 0,
-        LABEL: starLabel(s),
     }));
 }
 

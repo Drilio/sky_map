@@ -18,16 +18,21 @@ export default function App() {
         const now = new Date();
         return now.toISOString().slice(0, 19).replace("T", " ");
     });
-    const [latitude, setLatitude] = useState<number>(0);
-    const [longitude, setLongitude] = useState<number>(0);
+    const [latitude, setLatitude] = useState<number>(-23.5504);
+    const [longitude, setLongitude] = useState<number>(-46.6339);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    console.log(selectedDate)
+
     useEffect(() => {
         const loadCities = async () => {
             try {
-                setCities(await getCities());
+                const citiesData = await getCities();
+                setCities(citiesData);
+                // Set first city as default
+                if (citiesData.length > 0) {
+                    setSelectedCity(citiesData[0]);
+                }
             } catch (err) {
                 console.error(err);
                 setError("Failed to load cities");
@@ -39,7 +44,6 @@ export default function App() {
         loadCities();
     }, []);
 
-    // ✅ Sync coordinates when a city is selected
     useEffect(() => {
         if (selectedCity) {
             setLatitude(selectedCity.lat);
@@ -49,8 +53,6 @@ export default function App() {
 
     if (loading) return <div>Loading cities...</div>;
     if (error) return <div>Error: {error}</div>;
-
-    const datetime = new Date().toISOString();
 
     return (
         <div className="app">
@@ -70,8 +72,8 @@ export default function App() {
             <div className="content-wrapper">
                 <div className="main-layout">
                     <CoordinateInput
-                        initialLatitude={latitude}
-                        initialLongitude={longitude}
+                        latitude={latitude}
+                        longitude={longitude}
                         onCoordinatesChange={(lat, lng) => {
                             setLatitude(lat);
                             setLongitude(lng);
@@ -84,7 +86,7 @@ export default function App() {
                         limit={50}
                         latitude={latitude}
                         longitude={longitude}
-                        datetime={datetime}
+                        datetime={selectedDate}
                     />
                 </div>
             </div>

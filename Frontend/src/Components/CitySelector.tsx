@@ -31,7 +31,7 @@ export default function CitySelector(
             </span>
 
             <select
-                value={value?.id ?? "none"}
+                value={value?.id ?? cities[0]?.id ?? "none"}
                 onChange={(e) => {
                     const selected = e.target.value;
 

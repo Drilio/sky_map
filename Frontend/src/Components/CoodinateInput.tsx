@@ -3,27 +3,27 @@ import "../assets/CoordinateInput.css";
 
 interface CoordinateInputProps {
     onCoordinatesChange: (latitude: number, longitude: number) => void;
-    initialLatitude?: number;
-    initialLongitude?: number;
+    latitude: number;
+    longitude: number;
 }
 
 export default function CoordinateInput(
     {
         onCoordinatesChange,
-        initialLatitude = 0,
-        initialLongitude = 0,
+        latitude: propLatitude,
+        longitude: propLongitude,
     }: CoordinateInputProps) {
-    const [latitude, setLatitude] = useState(initialLatitude.toString());
-    const [longitude, setLongitude] = useState(initialLongitude.toString());
+    const [latitude, setLatitude] = useState(propLatitude.toString());
+    const [longitude, setLongitude] = useState(propLongitude.toString());
     const [latError, setLatError] = useState("");
     const [lonError, setLonError] = useState("");
 
     useEffect(() => {
-        setLatitude(initialLatitude.toString());
-        setLongitude(initialLongitude.toString());
+        setLatitude(propLatitude.toString());
+        setLongitude(propLongitude.toString());
         setLatError("");
         setLonError("");
-    }, [initialLatitude, initialLongitude]);
+    }, [propLatitude, propLongitude]);
 
     const validateLatitude = (value: string): boolean => {
         const num = parseFloat(value);
