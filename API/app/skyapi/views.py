@@ -6,28 +6,6 @@ from .models import Star
 from .models import CitiesModel
 from django.db.models.functions import Power
 from django.db.models import F, Value
-
-PARIS_LAT = 48.8566
-MIN_DEC_VISIBLE = -(90 - PARIS_LAT)  # -41.1434
-
-
-class TopBrightestParis(APIView):
-    def get(self, request):
-        rows = (
-            Star.objects
-            .exclude(id=0)
-            .filter(dec__gte=MIN_DEC_VISIBLE)
-            .order_by("mag")[:50]
-            .values(
-                "id", "hip",
-                "ra", "dec", "dist",
-                "mag", "absmag", "spect", "ci",
-                "x", "y", "z",
-                "rarad", "decrad",
-                "con", "comp", "comp_primary", "lum",
-            )
-        )
-        return Response(rows)
     
 class Cities(APIView):
     def get(self, request):
@@ -112,11 +90,13 @@ class SkyView(APIView):
         """
         x1 =  x * np.cos(lst) + y * np.sin(lst)
         y1 = -x * np.sin(lst) + y * np.cos(lst)
+        z1 =  z
 
         x2 = x1
         y2 = y1 * np.cos(latitude) + z * np.sin(latitude)
+        z2 = -y1 * np.sin(latitude) + z1 * np.cos(latitude)
 
-        return x2, y2
+        return x2, y2, z2
 
     def calculate_star_positions(self, latitude, longitude, stars_data, dt):
         """
@@ -142,7 +122,7 @@ class SkyView(APIView):
         stars_out = []
         
         for star in stars_data:
-            x, y = self.rotate_cartesian_equatorial_to_local(
+            x, y, z = self.rotate_cartesian_equatorial_to_local(
                 star.x,
                 star.y,
                 star.z,
@@ -153,16 +133,16 @@ class SkyView(APIView):
             
             stars_out.append({
             "id": star.id,
-            "ra": star.ra,
-            "dec": star.dec,
             "mag": star.mag,
             "x": x,
             "y": y,
+            "z": z,
+            "con": star.con,
             "initial_x": star.x,
             "initial_y": star.y
         })
 
-        return stars_out
+        return stars_out 
 
     def get(self, request, **kwargs):
         """
@@ -176,7 +156,7 @@ class SkyView(APIView):
         5. Return JSON response to front-end
         """
         possible_filter_mapping = {
-            "brightness":"mag"
+            "brightest":"mag"
         }
         ref_latitude = float(self.kwargs.get('latitude'))
         ref_longitude = float(self.kwargs.get('longitude'))
