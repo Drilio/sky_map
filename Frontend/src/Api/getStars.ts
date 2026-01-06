@@ -15,8 +15,8 @@ export async function getStars(
         datetime,
         kind,
     }: GetStarsParams) {
-    const url = `/api/stars/${latitude}:${longitude}/${datetime}/${kind}`;
-
+    const url = `http://localhost:8000/api/sky/${latitude}:${longitude}/${datetime}/${kind}:50`;
+    console.log("url", url)
     try {
         const response = await fetch(url);
 

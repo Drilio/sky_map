@@ -42,13 +42,15 @@ export default function SkyMap(
         const ac = new AbortController();
         setErr(null);
         setLoading(true);
-
+        console.log("dateTime : ", datetime)
+        console.log("latitude: ", latitude)
+        console.log("longitude : ", longitude)
+        console.log("kind: ", kind)
         getStars({datetime, latitude, longitude, kind, limit})
             .then((rows) => {
                 if (!Array.isArray(rows)) {
                     throw new Error("Invalid response format from server");
                 }
-
                 setStars(
                     rows.map((s: Star) => ({
                         id: s.id,
@@ -56,7 +58,6 @@ export default function SkyMap(
                         y: s.y,
                         z: s.z ?? 0,
                         mag: s.mag,
-                        proper: s.proper ?? undefined,
                         con: s.con ?? undefined,
                     }))
                 );
@@ -312,9 +313,6 @@ export default function SkyMap(
                         pointerEvents: "none",
                     }}
                 >
-                    <div style={{fontSize: 13, fontWeight: 700, marginBottom: 6}}>
-                        {hoveredStar.LABEL}
-                    </div>
                     <div style={{opacity: 0.85}}>
                         Mag: {hoveredStar.MAG.toFixed(2)}
                         {hoveredStar.con && ` | Con: ${hoveredStar.con}`}
