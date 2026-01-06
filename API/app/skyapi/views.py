@@ -131,16 +131,14 @@ class SkyView(APIView):
             )            
             stars_out.append({
             "id": star.id,
-            "mag": star.mag,
-            "lum": star.lum,
+            "luminosite": star.mag,
+            "taille": star.lum,
             "x": x,
             "y": y,
             "z": z,
             "con": star.con,
             "ci": star.ci,
             "approx_temp": star.approx_temp,
-            "initial_x": star.x, 
-            "initial_y": star.y
         })
         return stars_out 
 
