@@ -5,7 +5,7 @@ from datetime import datetime
 from .models import Star
 from .models import CitiesModel
 from django.db.models.functions import Power
-from django.db.models import F, Value
+from django.db.models import F, Value, FloatField, ExpressionWrapper
     
 class Cities(APIView):
     def get(self, request):
@@ -128,20 +128,20 @@ class SkyView(APIView):
                 star.z,
                 latitude,
                 lst
-            )
-
-            
+            )            
             stars_out.append({
             "id": star.id,
             "mag": star.mag,
+            "lum": star.lum,
             "x": x,
             "y": y,
             "z": z,
             "con": star.con,
-            "initial_x": star.x,
+            "ci": star.ci,
+            "approx_temp": star.approx_temp,
+            "initial_x": star.x, 
             "initial_y": star.y
         })
-
         return stars_out 
 
     def get(self, request, **kwargs):
@@ -156,17 +156,29 @@ class SkyView(APIView):
         5. Return JSON response to front-end
         """
         possible_filter_mapping = {
-            "brightest":"mag"
+            "brightest":"mag",
+            "hottest":"approx_temp",
+            "largest":"lum"
         }
         ref_latitude = float(self.kwargs.get('latitude'))
         ref_longitude = float(self.kwargs.get('longitude'))
         dt = datetime.strptime(self.kwargs.get('datetime'), "%Y-%m-%d %H:%M:%S") 
         stars_filter = self.kwargs.get('stars_filter')
         limit = self.kwargs.get('limit')
+        stars_with_temp = Star.objects.annotate(
+            approx_temp=ExpressionWrapper( 
+        #This formula is an approximation of a star’s effective temperature derived from its B−V color index (ci).
+                4600 * (
+                    (1 / (0.92 * F("ci") + Value(1.7))) +
+                    (1 / (0.92 * F("ci") + Value(0.62)))
+                ) - Value(273.15),
+                output_field=FloatField()
+            )
+        )
         if stars_filter == "nearest":
-            stars_to_show = Star.objects.annotate(dist2=Power(F("x") - Value(ref_latitude), 2) + Power(F("y") - Value(ref_longitude), 2)).order_by("dist2")[:limit]
+            stars_to_show = stars_with_temp.annotate(dist2=Power(F("x") - Value(ref_latitude), 2) + Power(F("y") - Value(ref_longitude), 2)).order_by("dist2")[:limit]
         else:
-            stars_to_show = Star.objects.order_by(possible_filter_mapping[stars_filter])[:limit]
+            stars_to_show = stars_with_temp.order_by(possible_filter_mapping[stars_filter])[:limit]
         ref_latitude_in_rad = np.radians(ref_latitude)
         ref_longitude_in_rad = np.radians(ref_longitude)
         all_stars_pos = self.calculate_star_positions(ref_latitude_in_rad, ref_longitude_in_rad, stars_to_show, dt) 
